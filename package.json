@@ -1,0 +1,39 @@
+{
+  "name": "llm-hyperparameters-tuner",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A tool for testing, optimizing, and finding the perfect hyperparameter configurations for LLM. Isolate & compare how varying one LLM hyperparameter affects outputs.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+    "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thirdmadman/llm-hyperparameters-tuner.git"
+  },
+  "author": "thirdmadman",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/thirdmadman/llm-hyperparameters-tuner/issues"
+  },
+  "homepage": "https://github.com/thirdmadman/llm-hyperparameters-tuner#readme",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1"
+  }
+}
