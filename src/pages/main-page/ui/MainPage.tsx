@@ -1,18 +1,20 @@
 import { useState } from 'react';
 
-import type { IGenerationResult, ILlmParameter } from '../types';
+import type { IGenerationResult, ILlmApiConfig, ILlmParameter } from '../types';
 import { GenerationResultsGrid } from './GenerationResultsGrid';
+import { LlmApiConfigGroup } from './LlmApiConfigGroup';
 import { LlmParametersInputGroup } from './LlmParameterInputGroup';
-import { PromptInputsGroup } from './PromptInputsGroup';
-import { MOCK_GENERATION_RESULTS, MOCK_PARAMETERS } from '../mocks';
 import { MainPageHeader } from './MainPageHeader';
+import { PromptInputsGroup } from './PromptInputsGroup';
+import { MOCK_API_CONFIG, MOCK_GENERATION_RESULTS, MOCK_PARAMETERS } from '../mocks';
 
 export function MainPage() {
   const [isExecuting, setIsExecuting] = useState(false);
+  const [llmApiConfig, setLlmApiConfig] = useState<ILlmApiConfig>(MOCK_API_CONFIG);
   const [llmParameters, setLlmParameters] = useState<Array<ILlmParameter>>(MOCK_PARAMETERS);
   const [generationResults, setGenerationResults] = useState<Array<IGenerationResult> | null>(null);
 
-  const handleParameterSelect = (llmParameter: ILlmParameter) => {
+  const handleVariableParameterSelect = (llmParameter: ILlmParameter) => {
     setLlmParameters((prev) =>
       prev.map((param) =>
         param.name === llmParameter.name ? { ...param, isVariable: true } : { ...param, isVariable: false }
@@ -33,12 +35,17 @@ export function MainPage() {
       <div className="mx-auto w-full max-w-screen-lg px-4 py-8">
         <MainPageHeader />
 
+        {/* Top: LLM API Configuration */}
+        <section className="mb-6 p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <LlmApiConfigGroup llmApiConfig={llmApiConfig} onLlmApiConfigUpdate={setLlmApiConfig} />
+        </section>
+
         {/* Top: Parameter List (Single Column) */}
         <section className="mb-6 p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <LlmParametersInputGroup
             llmParameters={llmParameters}
             onParameterUpdateEvent={handleParameterUpdate}
-            onParameterSelectedEvent={handleParameterSelect}
+            onParameterSelectedEvent={handleVariableParameterSelect}
           />
         </section>
 
