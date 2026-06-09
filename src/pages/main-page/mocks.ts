@@ -29,6 +29,17 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    label: 'Temperature',
+    name: 'temperature',
+    value: 1,
+    min: 0,
+    max: 2,
+    isVariable: false,
+    startVariateFrom: null,
+    endVariateTo: null,
+    stepsCount: null,
+  },
+  {
     label: 'Min P',
     name: 'min_p',
     value: 0.9,
