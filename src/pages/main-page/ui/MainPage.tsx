@@ -1,17 +1,23 @@
 import { useState } from 'react';
 
-import type { IGenerationResult, ILlmApiConfig, ILlmParameter } from '../types';
+import type { IGenerationPrompts, IGenerationResult, ILlmApiConfig, ILlmParameter } from '../types';
 import { GenerationResultsGrid } from './GenerationResultsGrid';
 import { LlmApiConfigGroup } from './LlmApiConfigGroup';
 import { LlmParametersInputGroup } from './LlmParameterInputGroup';
 import { MainPageHeader } from './MainPageHeader';
 import { PromptInputsGroup } from './PromptInputsGroup';
-import { DEFAULT_API_CONFIG, MOCK_GENERATION_RESULTS, DEFAULT_LLM_PARAMETERS } from '../mocks';
+import {
+  DEFAULT_API_CONFIG,
+  DEFAULT_GENERATION_PROMPTS,
+  DEFAULT_LLM_PARAMETERS,
+  MOCK_GENERATION_RESULTS,
+} from '../mocks';
 
 export function MainPage() {
   const [isExecuting, setIsExecuting] = useState(false);
   const [llmApiConfig, setLlmApiConfig] = useState<ILlmApiConfig>(DEFAULT_API_CONFIG);
   const [llmParameters, setLlmParameters] = useState<Array<ILlmParameter>>(DEFAULT_LLM_PARAMETERS);
+  const [generationPrompts, setGenerationPrompts] = useState<IGenerationPrompts>(DEFAULT_GENERATION_PROMPTS);
   const [generationResults, setGenerationResults] = useState<Array<IGenerationResult> | null>(null);
 
   const handleVariableParameterSelect = (llmParameter: ILlmParameter) => {
@@ -28,6 +34,10 @@ export function MainPage() {
       prev.map((param) => (param.name === llmParameter.name ? { ...param, ...llmParameter } : param))
     );
     console.log('Parameter updated:', llmParameter.label);
+  };
+
+  const handlePromptsChange = (newPrompts: IGenerationPrompts) => {
+    setGenerationPrompts(newPrompts);
   };
 
   return (
@@ -51,7 +61,11 @@ export function MainPage() {
 
         {/* Middle: Prompt */}
         <section className="mb-6">
-          <PromptInputsGroup isCollapsed={isExecuting} />
+          <PromptInputsGroup
+            isCollapsed={isExecuting}
+            prompts={generationPrompts}
+            onPromptsChange={handlePromptsChange}
+          />
         </section>
 
         {/* Action Buttons */}
@@ -60,12 +74,21 @@ export function MainPage() {
             <button
               className="px-5 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               disabled={isExecuting}
+              onClick={() => {
+                // TODO: Pass generationPrompts, llmApiConfig, llmParameters to execution feature
+                console.log('Executing with:', { generationPrompts, llmApiConfig, llmParameters });
+                setIsExecuting(true);
+              }}
             >
               Execute
             </button>
             <button
               className="px-5 py-2 text-sm font-medium rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               disabled={!isExecuting}
+              onClick={() => {
+                setIsExecuting(false);
+                // TODO: Implement cancel logic (abort controllers)
+              }}
             >
               Cancel
             </button>

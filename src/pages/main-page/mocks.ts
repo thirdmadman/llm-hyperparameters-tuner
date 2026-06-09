@@ -1,4 +1,4 @@
-import type { IGenerationResult, ILlmApiConfig, ILlmParameter } from './types';
+import type { IGenerationPrompts, IGenerationResult, ILlmApiConfig, ILlmParameter } from './types';
 
 export const DEFAULT_API_CONFIG: ILlmApiConfig = {
   url: 'http://localhost:11434/api/generate',
@@ -84,6 +84,11 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
 ] as const;
+
+export const DEFAULT_GENERATION_PROMPTS: IGenerationPrompts = {
+  systemPrompt: null,
+  prompt: 'What is the meaning of life?',
+};
 
 export const MOCK_GENERATION_RESULTS: Array<IGenerationResult> = Array.from({ length: 4 }, (_, i) => ({
   model: 'llama3.2',

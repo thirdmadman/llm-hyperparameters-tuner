@@ -13,8 +13,6 @@ export function LlmParametersInputGroup({
   onParameterSelectedEvent,
 }: LlmParametersInputGroupProps) {
   const selectedVariableParameter = llmParameters.find((param) => param.isVariable);
-  console.error(llmParameters);
-
   return (
     <div className="flex flex-col gap-4 ">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Parameters</h2>
