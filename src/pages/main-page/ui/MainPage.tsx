@@ -6,12 +6,12 @@ import { LlmApiConfigGroup } from './LlmApiConfigGroup';
 import { LlmParametersInputGroup } from './LlmParameterInputGroup';
 import { MainPageHeader } from './MainPageHeader';
 import { PromptInputsGroup } from './PromptInputsGroup';
-import { MOCK_API_CONFIG, MOCK_GENERATION_RESULTS, MOCK_PARAMETERS } from '../mocks';
+import { DEFAULT_API_CONFIG, MOCK_GENERATION_RESULTS, DEFAULT_LLM_PARAMETERS } from '../mocks';
 
 export function MainPage() {
   const [isExecuting, setIsExecuting] = useState(false);
-  const [llmApiConfig, setLlmApiConfig] = useState<ILlmApiConfig>(MOCK_API_CONFIG);
-  const [llmParameters, setLlmParameters] = useState<Array<ILlmParameter>>(MOCK_PARAMETERS);
+  const [llmApiConfig, setLlmApiConfig] = useState<ILlmApiConfig>(DEFAULT_API_CONFIG);
+  const [llmParameters, setLlmParameters] = useState<Array<ILlmParameter>>(DEFAULT_LLM_PARAMETERS);
   const [generationResults, setGenerationResults] = useState<Array<IGenerationResult> | null>(null);
 
   const handleVariableParameterSelect = (llmParameter: ILlmParameter) => {

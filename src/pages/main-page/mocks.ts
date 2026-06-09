@@ -1,11 +1,11 @@
 import type { IGenerationResult, ILlmApiConfig, ILlmParameter } from './types';
 
-export const MOCK_API_CONFIG: ILlmApiConfig = {
-  url: 'https://api.example.com/generate',
-  selectedModelName: 'llama3.1:8b',
+export const DEFAULT_API_CONFIG: ILlmApiConfig = {
+  url: 'http://localhost:11434/api/generate',
+  selectedModelName: 'qwen3.6:35b-a3b',
 };
 
-export const MOCK_PARAMETERS: Array<ILlmParameter> = [
+export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
   {
     label: 'Context size',
     name: 'num_ctx',
