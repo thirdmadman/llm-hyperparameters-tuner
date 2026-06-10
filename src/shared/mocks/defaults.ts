@@ -1,4 +1,7 @@
-import type { IGenerationPrompts, IGenerationResult, ILlmApiConfig, ILlmParameter } from './types';
+import type { IGenerationResult } from '@/entities/generation-result';
+import type { ILlmApiConfig } from '@/entities/llm-api-config';
+import type { IGenerationPrompts } from '@/entities/llm-generation-config';
+import type { ILlmParameter } from '@/entities/llm-parameter';
 
 export const DEFAULT_API_CONFIG: ILlmApiConfig = {
   url: 'http://localhost:11434/api/generate',

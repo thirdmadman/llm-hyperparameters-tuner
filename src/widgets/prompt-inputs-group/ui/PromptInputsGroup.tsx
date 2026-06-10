@@ -1,4 +1,4 @@
-import type { IGenerationPrompts } from '@/pages/main-page/types';
+import type { IGenerationPrompts } from '@/entities/llm-generation-config';
 
 export interface IPromptInputsGroupProps {
   isCollapsed: boolean;

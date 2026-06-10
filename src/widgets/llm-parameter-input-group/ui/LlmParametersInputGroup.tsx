@@ -1,5 +1,5 @@
-import type { ILlmParameter } from '../types';
 import { LlmParameterInput } from './LlmParameterInput';
+import type { ILlmParameter } from '@/entities/llm-parameter';
 
 export interface LlmParametersInputGroupProps {
   llmParameters: Array<ILlmParameter>;

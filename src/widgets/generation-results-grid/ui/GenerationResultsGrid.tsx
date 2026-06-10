@@ -1,5 +1,6 @@
-import type { IGenerationResult, ILlmParameter } from '../types';
 import { GenerationResultCard } from './GenerationResultCard';
+import type { IGenerationResult } from '@/entities/generation-result';
+import type { ILlmParameter } from '@/entities/llm-parameter';
 
 interface IGenerationResultsGridProps {
   generationResults: Array<IGenerationResult> | null;

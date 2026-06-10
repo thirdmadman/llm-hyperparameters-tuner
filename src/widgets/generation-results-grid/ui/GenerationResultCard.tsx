@@ -1,4 +1,4 @@
-import type { IGenerationResult } from '../types';
+import type { IGenerationResult } from '@/entities/generation-result';
 
 export type TGenerationResultCardStatus = 'idle' | 'completed';
 

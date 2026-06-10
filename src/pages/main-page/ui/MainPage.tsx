@@ -1,17 +1,20 @@
 import { useState } from 'react';
 
-import type { IGenerationPrompts, IGenerationResult, ILlmApiConfig, ILlmParameter } from '../types';
-import { GenerationResultsGrid } from './GenerationResultsGrid';
-import { LlmApiConfigGroup } from './LlmApiConfigGroup';
-import { LlmParametersInputGroup } from './LlmParameterInputGroup';
 import { MainPageHeader } from './MainPageHeader';
-import { PromptInputsGroup } from './PromptInputsGroup';
+import type { IGenerationResult } from '@/entities/generation-result';
+import type { ILlmApiConfig } from '@/entities/llm-api-config';
+import type { IGenerationPrompts } from '@/entities/llm-generation-config';
+import type { ILlmParameter } from '@/entities/llm-parameter';
 import {
   DEFAULT_API_CONFIG,
   DEFAULT_GENERATION_PROMPTS,
   DEFAULT_LLM_PARAMETERS,
   MOCK_GENERATION_RESULTS,
-} from '../mocks';
+} from '@/shared/mocks';
+import { GenerationResultsGrid } from '@/widgets/generation-results-grid';
+import { LlmApiConfigGroup } from '@/widgets/llm-api-config-group';
+import { LlmParametersInputGroup } from '@/widgets/llm-parameter-input-group';
+import { PromptInputsGroup } from '@/widgets/prompt-inputs-group';
 
 export function MainPage() {
   const [isExecuting, setIsExecuting] = useState(false);

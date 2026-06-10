@@ -1,4 +1,4 @@
-import type { ILlmApiConfig } from '../types';
+import type { ILlmApiConfig } from '@/entities/llm-api-config';
 
 interface ILlmApiConfigGroupProps {
   llmApiConfig: ILlmApiConfig;

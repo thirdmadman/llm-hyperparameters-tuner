@@ -1,4 +1,4 @@
-import type { ILlmParameter } from '../types';
+import type { ILlmParameter } from '@/entities/llm-parameter';
 
 interface ILlmParameterInputProps {
   llmParameter: ILlmParameter;
