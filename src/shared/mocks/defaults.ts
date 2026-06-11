@@ -4,7 +4,7 @@ import type { IGenerationPrompts } from '@/entities/llm-generation-config';
 import type { ILlmParameter } from '@/entities/llm-parameter';
 
 export const DEFAULT_API_CONFIG: ILlmApiConfig = {
-  url: 'http://localhost:11434/api/generate',
+  url: 'http://localhost:11434/',
   selectedModelName: 'qwen3.6:35b-a3b',
 };
 
@@ -109,7 +109,7 @@ export const MOCK_GENERATION_RESULTS: Array<IGenerationResult> = Array.from({ le
       presence_penalty: 0,
     },
   },
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
   status: 'ready',
   generationOutputResult:
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',

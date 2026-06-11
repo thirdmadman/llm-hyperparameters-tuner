@@ -33,6 +33,6 @@ export class OllamaApiClient {
     });
     console.log(response.message.content);
 
-    return response.message.content;
+    return response;
   }
 }
