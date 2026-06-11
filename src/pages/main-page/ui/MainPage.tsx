@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { MainPageHeader } from './MainPageHeader';
 import type { IGenerationResult } from '@/entities/generation-result';
 import type { ILlmApiConfig } from '@/entities/llm-api-config';
-import type { IGenerationPrompts } from '@/entities/llm-generation-config';
+import type { IGenerationPrompts, ILlmGenerationConfig } from '@/entities/llm-generation-config';
 import type { ILlmParameter } from '@/entities/llm-parameter';
+import { mapLlmParametersToApiOptions } from '@/shared/api/ollama/mapLlmParametersToApiOptions';
+import { OllamaApiClient } from '@/shared/api/ollama/OllamaApiClient';
 import {
   DEFAULT_API_CONFIG,
   DEFAULT_GENERATION_PROMPTS,
@@ -15,6 +17,37 @@ import { GenerationResultsGrid } from '@/widgets/generation-results-grid';
 import { LlmApiConfigGroup } from '@/widgets/llm-api-config-group';
 import { LlmParametersInputGroup } from '@/widgets/llm-parameter-input-group';
 import { PromptInputsGroup } from '@/widgets/prompt-inputs-group';
+
+const generateLlmResponse = async (
+  llmApiConfig: ILlmApiConfig,
+  generationPrompts: IGenerationPrompts,
+  llmParameters: Array<ILlmParameter>
+) => {
+  const hyperparameters = mapLlmParametersToApiOptions(llmParameters);
+
+  const llmGenerationConfig: ILlmGenerationConfig = { promptConfigs: generationPrompts, hyperparameters };
+
+  const ollamaApiClient = new OllamaApiClient();
+  const response = await ollamaApiClient.chat(llmApiConfig, llmGenerationConfig);
+  console.log(response.message.content);
+
+  const generationResult: IGenerationResult = {
+    model: llmApiConfig.selectedModelName,
+    configs: llmGenerationConfig,
+    createdAt: response.created_at,
+    status: 'ready',
+    generationOutputResult: response.message.content,
+    doneReason: response.done_reason,
+    totalDuration: response.total_duration,
+    loadDuration: response.load_duration,
+    promptEvalCount: response.prompt_eval_count,
+    promptEvalDuration: response.prompt_eval_duration,
+    evalCount: response.eval_count,
+    evalDuration: response.eval_duration,
+  };
+
+  return generationResult;
+};
 
 export function MainPage() {
   const [isExecuting, setIsExecuting] = useState(false);
@@ -81,6 +114,13 @@ export function MainPage() {
                 // TODO: Pass generationPrompts, llmApiConfig, llmParameters to execution feature
                 console.log('Executing with:', { generationPrompts, llmApiConfig, llmParameters });
                 setIsExecuting(true);
+
+                void generateLlmResponse(llmApiConfig, generationPrompts, llmParameters).then((generationResult) => {
+                  setGenerationResults([...(generationResults ?? []), generationResult]);
+                  setIsExecuting(false);
+                });
+
+                // setGenerationResults([{ content: response }]); // Update with the new response
               }}
             >
               Execute
