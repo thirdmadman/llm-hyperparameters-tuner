@@ -1,3 +1,4 @@
+import { GenerationStatisticsBlock } from './GenerationStatisticsBlock';
 import type { IGenerationResult } from '@/entities/generation-result';
 
 export type TGenerationResultCardStatus = 'idle' | 'completed';
@@ -14,6 +15,7 @@ export function GenerationResultCard({
   generationResult,
 }: IGenerationResultCardProps) {
   const { status, generationOutputResult } = generationResult;
+
   return (
     <div
       className={`flex flex-col rounded-lg border p-4 min-h-[280px] transition-colors ${
@@ -36,9 +38,12 @@ export function GenerationResultCard({
           {status === 'ready' ? '● Done' : '○ Idle'}
         </span>
       </div>
-      <div className="flex-1 overflow-hidden">
+
+      <div className="flex-1 overflow-hidden mb-3">
         <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-6">{generationOutputResult}</p>
       </div>
+
+      {status === 'ready' && <GenerationStatisticsBlock generationResult={generationResult} />}
     </div>
   );
 }
