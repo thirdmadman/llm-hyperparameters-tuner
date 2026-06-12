@@ -28,10 +28,15 @@ export function GenerationResultCard({
   generationResult,
 }: IGenerationResultCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { status, generationOutputResult } = generationResult;
+  const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
+
+  const { status, generationContentResult, generationThinkingResult } = generationResult;
 
   const toggleExpand = () => {
     setIsExpanded((prev) => !prev);
+  };
+  const toggleThinking = () => {
+    setIsThinkingExpanded((prev) => !prev);
   };
 
   return (
@@ -42,19 +47,12 @@ export function GenerationResultCard({
           : 'border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800'
       } ${isExpanded ? '' : 'min-h-[280px]'}`}
     >
+      {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {variableParameterLabel} = {variableParameterValue}
         </span>
         <div className="flex items-center gap-3">
-          <button
-            onClick={toggleExpand}
-            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
-            aria-label={isExpanded ? 'Collapse card' : 'Expand card'}
-          >
-            <ExpandIcon isExpanded={isExpanded} />
-            {isExpanded ? 'Collapse' : 'Expand'}
-          </button>
           <span
             className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${
               status === 'ready'
@@ -64,17 +62,54 @@ export function GenerationResultCard({
           >
             {status === 'ready' ? '● Done' : '○ Idle'}
           </span>
+          <button
+            onClick={toggleExpand}
+            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+            aria-label={isExpanded ? 'Collapse card' : 'Expand card'}
+          >
+            <ExpandIcon isExpanded={isExpanded} />
+            {isExpanded ? 'Collapse' : 'Expand'}
+          </button>
         </div>
       </div>
 
+      {/* 2. Thinking Section (Collapsible, distinct style) */}
+      {generationThinkingResult && (
+        <div className="py-2">
+          <button
+            onClick={toggleThinking}
+            className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline mb-1 cursor-pointer"
+          >
+            <ExpandIcon isExpanded={isThinkingExpanded} />
+            {isThinkingExpanded ? 'Collapse' : 'Expand'} Thinking Process
+          </button>
+          <div
+            className={`transition-all duration-300 ease-in-out ${
+              isThinkingExpanded ? 'max-h-[500px] opacity-100 overflow-y-auto' : 'max-h-0 opacity-0 overflow-hidden'
+            }`}
+          >
+            <p
+              className={`text-sm text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-900 p-3 rounded-md border border-gray-200 dark:border-gray-700 leading-relaxed ${isThinkingExpanded ? 'whitespace-pre-wrap' : 'line-clamp-6'}`}
+            >
+              {generationThinkingResult}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Body: Content + Thinking */}
       <div className={`flex-1 mb-3 ${isExpanded ? '' : 'overflow-hidden'}`}>
-        <p
-          className={`text-sm text-gray-700 dark:text-gray-300 ${isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-6'}`}
-        >
-          {generationOutputResult}
-        </p>
+        {/* 1. Content Section (Always visible) */}
+        <div className="mb-4">
+          <p
+            className={`text-sm text-gray-700 dark:text-gray-300 leading-relaxed ${isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-6'}`}
+          >
+            {generationContentResult}
+          </p>
+        </div>
       </div>
 
+      {/* Footer: Statistics */}
       {status === 'ready' && <GenerationStatisticsBlock generationResult={generationResult} />}
     </div>
   );

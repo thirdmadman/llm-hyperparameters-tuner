@@ -5,7 +5,8 @@ export interface IGenerationResult {
   configs: ILlmGenerationConfig;
   createdAt: Date;
   status: 'error' | 'loading' | 'ready';
-  generationOutputResult: string | null;
+  generationContentResult: string | null;
+  generationThinkingResult: string | null;
   doneReason?: string;
   totalDuration?: number;
   loadDuration?: number;
