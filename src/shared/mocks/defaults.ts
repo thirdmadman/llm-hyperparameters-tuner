@@ -111,7 +111,18 @@ export const MOCK_GENERATION_RESULTS: Array<IGenerationResult> = Array.from({ le
   },
   createdAt: new Date(),
   status: 'ready',
-  generationContentResult:
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-  generationThinkingResult: `[Mock thinking] Analyzing prompt ${String(i + 1)}... Formulating response...`,
+  generationContentResult: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+  generationThinkingResult: `[Mock CoT] Analyzing prompt ${String(i + 1)}...`,
+  // Add tool calls only to the first mock for demonstration
+  generationToolCalls:
+    i === 0
+      ? [
+          {
+            function: {
+              name: 'get_weather',
+              arguments: '{"location": "New York", "unit": "celsius"}',
+            },
+          },
+        ]
+      : null,
 }));

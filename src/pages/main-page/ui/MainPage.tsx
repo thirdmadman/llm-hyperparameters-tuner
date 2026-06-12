@@ -38,6 +38,15 @@ const generateLlmResponse = async (
     status: 'ready',
     generationContentResult: response.message.content,
     generationThinkingResult: response.message.thinking ?? null,
+    // Map tool calls if present, otherwise null
+    generationToolCalls: response.message.tool_calls
+      ? response.message.tool_calls.map((tc) => ({
+          function: {
+            name: tc.function.name,
+            arguments: JSON.stringify(tc.function.arguments),
+          },
+        }))
+      : null,
     doneReason: response.done_reason,
     totalDuration: response.total_duration,
     loadDuration: response.load_duration,

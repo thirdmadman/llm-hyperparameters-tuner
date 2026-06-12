@@ -7,6 +7,13 @@ export interface IGenerationResult {
   status: 'error' | 'loading' | 'ready';
   generationContentResult: string | null;
   generationThinkingResult: string | null;
+  // Support for Ollama function calling
+  generationToolCalls: Array<{
+    function: {
+      name: string;
+      arguments: string;
+    };
+  }> | null;
   doneReason?: string;
   totalDuration?: number;
   loadDuration?: number;

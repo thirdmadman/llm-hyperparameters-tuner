@@ -29,14 +29,18 @@ export function GenerationResultCard({
 }: IGenerationResultCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
+  const [isToolCallsExpanded, setIsToolCallsExpanded] = useState(false);
 
-  const { status, generationContentResult, generationThinkingResult } = generationResult;
+  const { status, generationContentResult, generationThinkingResult, generationToolCalls } = generationResult;
 
   const toggleExpand = () => {
     setIsExpanded((prev) => !prev);
   };
   const toggleThinking = () => {
     setIsThinkingExpanded((prev) => !prev);
+  };
+  const toggleToolCalls = () => {
+    setIsToolCallsExpanded((prev) => !prev);
   };
 
   return (
@@ -97,7 +101,7 @@ export function GenerationResultCard({
         </div>
       )}
 
-      {/* Body: Content + Thinking */}
+      {/* Body */}
       <div className={`flex-1 mb-3 ${isExpanded ? '' : 'overflow-hidden'}`}>
         {/* 1. Content Section (Always visible) */}
         <div className="mb-4">
@@ -107,6 +111,37 @@ export function GenerationResultCard({
             {generationContentResult}
           </p>
         </div>
+
+        {/* 3. Tool Calls Section (Collapsible, distinct style) */}
+        {generationToolCalls && generationToolCalls.length > 0 && (
+          <div className="mb-4">
+            <button
+              onClick={toggleToolCalls}
+              className="flex items-center gap-1 text-xs font-medium text-orange-600 dark:text-orange-400 hover:underline mb-1 cursor-pointer"
+            >
+              <ExpandIcon isExpanded={isToolCallsExpanded} />
+              {isToolCallsExpanded ? 'Collapse' : 'Expand'} Function Calls ({generationToolCalls.length})
+            </button>
+            <div
+              className={`transition-all duration-300 ease-in-out ${
+                isToolCallsExpanded ? 'max-h-[500px] opacity-100 overflow-y-auto' : 'max-h-0 opacity-0 overflow-hidden'
+              }`}
+            >
+              <div className="bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md p-3 space-y-2">
+                {generationToolCalls.map((tool, idx) => (
+                  <div key={idx} className="text-xs font-mono">
+                    <div className="font-bold text-gray-700 dark:text-gray-300 mb-1">
+                      Function: {tool.function.name}
+                    </div>
+                    <div className="text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700">
+                      <pre className="whitespace-pre-wrap break-all">{tool.function.arguments}</pre>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer: Statistics */}
