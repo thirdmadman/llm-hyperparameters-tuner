@@ -22,7 +22,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
   },
   {
     label: 'Max tokens',
-    name: 'max_tokens',
+    name: 'num_predict',
     value: 512,
     min: 1,
     max: 102400,
@@ -102,7 +102,8 @@ export const MOCK_GENERATION_RESULTS: Array<IGenerationResult> = Array.from({ le
     },
     hyperparameters: {
       num_ctx: 2048,
-      max_tokens: 512,
+      temperature: 1,
+      num_predict: 512,
       min_p: 0.9,
       top_k: 0,
       top_p: 0.9,
@@ -110,6 +111,7 @@ export const MOCK_GENERATION_RESULTS: Array<IGenerationResult> = Array.from({ le
     },
   },
   createdAt: new Date(),
+  isPartial: false,
   status: 'ready',
   generationContentResult: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
   generationThinkingResult: `[Mock CoT] Analyzing prompt ${String(i + 1)}...`,

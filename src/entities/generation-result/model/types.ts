@@ -4,9 +4,10 @@ export interface IGenerationResult {
   model: string;
   configs: ILlmGenerationConfig;
   createdAt: Date;
-  status: 'error' | 'loading' | 'ready';
+  status: 'error' | 'loading' | 'ready' | 'cancelled';
   generationContentResult: string | null;
   generationThinkingResult: string | null;
+  isPartial: boolean;
   // Support for Ollama function calling
   generationToolCalls: Array<{
     function: {
