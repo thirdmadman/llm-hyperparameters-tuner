@@ -1,3 +1,5 @@
+import { InputNumber } from './InputNumber';
+import { InputRange } from './InputRange';
 import type { ILlmParameter } from '@/entities/llm-parameter';
 
 interface ILlmParameterInputProps {
@@ -16,15 +18,12 @@ export function LlmParameterInput({ llmParameter, onSelectEvent, onUpdateEvent }
             {llmParameter.label}
           </label>
           {!llmParameter.isVariable && (
-            <input
-              type="number"
+            <InputNumber
               value={llmParameter.value}
-              onChange={(e) => {
-                onUpdateEvent({ ...llmParameter, value: parseInt(e.target.value, 10) });
-                console.log('Parameter value changed:', e.target.value);
+              onChange={(value) => {
+                onUpdateEvent({ ...llmParameter, value: value });
               }}
               step={llmParameter.label.includes('penalty') || llmParameter.label.includes('P') ? 0.01 : 1}
-              className="w-24 px-2 py-1.5 text-sm font-mono rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           )}
         </div>
@@ -43,62 +42,45 @@ export function LlmParameterInput({ llmParameter, onSelectEvent, onUpdateEvent }
         </button>
       </div>
 
-      {/* Expanded range inputs */}
       {llmParameter.isVariable && (
         <div className="flex flex-col gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3">
-            <label className="text-xs text-gray-500 dark:text-gray-400 w-12 shrink-0">From:</label>
-            <input
-              type="range"
-              min={llmParameter.min}
-              max={
-                (llmParameter.endVariateTo ?? 0 > llmParameter.max)
-                  ? (llmParameter.endVariateTo ?? 0)
-                  : llmParameter.max
-              }
-              value={llmParameter.startVariateFrom ?? 0}
-              onChange={(e) => {
-                onUpdateEvent({ ...llmParameter, startVariateFrom: parseInt(e.target.value, 10) });
-              }}
-              className="flex-1 accent-indigo-600"
-            />
-            <span className="text-xs font-mono text-gray-600 dark:text-gray-400 w-8 text-right">
-              {llmParameter.startVariateFrom ?? 0}
-            </span>
-          </div>
+          <InputRange
+            label="From:"
+            min={llmParameter.min}
+            max={
+              (llmParameter.endVariateTo ?? 0 > llmParameter.max) ? (llmParameter.endVariateTo ?? 0) : llmParameter.max
+            }
+            value={llmParameter.startVariateFrom ?? 0}
+            displayValue={llmParameter.startVariateFrom ?? 0}
+            onChange={(value) => {
+              onUpdateEvent({ ...llmParameter, startVariateFrom: value });
+            }}
+          />
 
-          <div className="flex items-center gap-3">
-            <label className="text-xs text-gray-500 dark:text-gray-400 w-12 shrink-0">To:</label>
-            <input
-              type="range"
-              min={
-                (llmParameter.startVariateFrom ?? 0 > llmParameter.min)
-                  ? (llmParameter.startVariateFrom ?? 0)
-                  : llmParameter.min
-              }
-              max={llmParameter.max}
-              value={llmParameter.endVariateTo ?? 0}
-              onChange={(e) => {
-                onUpdateEvent({ ...llmParameter, endVariateTo: parseInt(e.target.value, 10) });
-              }}
-              className="flex-1 accent-indigo-600"
-            />
-            <span className="text-xs font-mono text-gray-600 dark:text-gray-400 w-8 text-right">
-              {llmParameter.endVariateTo ?? 0}
-            </span>
-          </div>
+          <InputRange
+            label="To:"
+            min={
+              (llmParameter.startVariateFrom ?? 0 > llmParameter.min)
+                ? (llmParameter.startVariateFrom ?? 0)
+                : llmParameter.min
+            }
+            max={llmParameter.max}
+            value={llmParameter.endVariateTo ?? 0}
+            displayValue={llmParameter.endVariateTo ?? 0}
+            onChange={(v) => {
+              onUpdateEvent({ ...llmParameter, endVariateTo: v });
+            }}
+          />
 
           <div className="flex items-center gap-3">
             <label className="text-xs text-gray-500 dark:text-gray-400 w-12 shrink-0">Steps:</label>
-            <input
-              type="number"
-              value={llmParameter.stepsCount ?? ''}
-              onChange={(e) => {
-                onUpdateEvent({ ...llmParameter, stepsCount: parseInt(e.target.value, 10) });
+            <InputNumber
+              value={llmParameter.stepsCount ?? 0}
+              onChange={(value) => {
+                onUpdateEvent({ ...llmParameter, stepsCount: value });
               }}
               step={1}
               placeholder="Steps"
-              className="flex-1 px-2 py-1.5 text-sm font-mono rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
