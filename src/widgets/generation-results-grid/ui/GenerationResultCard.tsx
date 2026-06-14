@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { GenerationStatisticsBlock } from './GenerationStatisticsBlock';
+import { StatusBadge } from './StatusBadge';
 import type { IGenerationResult } from '@/entities/generation-result';
 
 export type TGenerationResultCardStatus = 'idle' | 'completed';
@@ -21,21 +22,6 @@ const ExpandIcon = ({ isExpanded }: { isExpanded: boolean }) => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
   </svg>
 );
-
-// Status badge logic:
-const statusLabel = {
-  ready: '● Done',
-  loading: '◌ Streaming...',
-  cancelled: '○ Cancelled',
-  error: '✕ Error',
-};
-
-const statusClasses = {
-  ready: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-  loading: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 animate-pulse',
-  cancelled: 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
-  error: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-};
 
 export function GenerationResultCard({
   variableParameterLabel,
@@ -72,7 +58,7 @@ export function GenerationResultCard({
           {variableParameterLabel} = {variableParameterValue}
         </span>
         <div className="flex items-center gap-3">
-          <span className={statusClasses[status]}>{statusLabel[status]}</span>
+          <StatusBadge status={status} isSmall={!isExpanded} />
           <button
             onClick={toggleExpand}
             className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer"
@@ -87,9 +73,12 @@ export function GenerationResultCard({
       {/* 2. Thinking Section (Collapsible, distinct style) */}
       {generationThinkingResult && (
         <div className="py-2">
+          {status === 'loading' && !generationContentResult && (
+            <p className="text-sm text-gray-400 italic">Thinking...</p>
+          )}
           <button
             onClick={toggleThinking}
-            className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline mb-1 cursor-pointer"
+            className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline py-2 cursor-pointer"
           >
             <ExpandIcon isExpanded={isThinkingExpanded} />
             {isThinkingExpanded ? 'Collapse' : 'Expand'} Thinking Process
@@ -108,11 +97,12 @@ export function GenerationResultCard({
         </div>
       )}
 
-      {/* Body */}
       <div className={`flex-1 mb-3 ${isExpanded ? '' : 'overflow-hidden'}`}>
-        {/* 1. Content Section (Always visible) */}
         <div className="mb-4">
           {status === 'loading' && !generationContentResult && (
+            <p className="text-sm text-gray-400 italic">Waiting for response...</p>
+          )}
+          {status === 'loading' && generationContentResult && (
             <p className="text-sm text-gray-400 italic">Streaming response...</p>
           )}
           <p
