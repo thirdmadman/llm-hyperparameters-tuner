@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { ExpandButton } from './ExpandButton';
+import { ExpandIcon } from './ExpandIcon';
 import { GenerationStatisticsBlock } from './GenerationStatisticsBlock';
 import { StatusBadge } from './StatusBadge';
 import type { IGenerationResult } from '@/entities/generation-result';
@@ -11,17 +13,6 @@ export interface IGenerationResultCardProps {
   variableParameterValue: number;
   generationResult: IGenerationResult;
 }
-
-const ExpandIcon = ({ isExpanded }: { isExpanded: boolean }) => (
-  <svg
-    className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-  </svg>
-);
 
 export function GenerationResultCard({
   variableParameterLabel,
@@ -46,28 +37,21 @@ export function GenerationResultCard({
 
   return (
     <div
-      className={`flex flex-col rounded-lg border p-4 transition-all ${isExpanded ? 'col-span-full' : ''} ${
+      className={`flex flex-col rounded-lg border px-4 py-3 transition-all ${isExpanded ? 'col-span-full' : ''} ${
         status === 'error'
           ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800'
           : 'border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800'
       } ${isExpanded ? '' : 'min-h-[280px]'}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-col justify-between gap-2">
+        <div className="flex justify-between items-center gap-3">
+          <ExpandButton isExpanded={isExpanded} onToggle={toggleExpand} />
+          <StatusBadge status={status} isSmall={!isExpanded} />
+        </div>
         <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {variableParameterLabel} = {variableParameterValue}
         </span>
-        <div className="flex items-center gap-3">
-          <StatusBadge status={status} isSmall={!isExpanded} />
-          <button
-            onClick={toggleExpand}
-            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer"
-            aria-label={isExpanded ? 'Collapse card' : 'Expand card'}
-          >
-            <ExpandIcon isExpanded={isExpanded} />
-            {isExpanded ? 'Collapse' : 'Expand'}
-          </button>
-        </div>
       </div>
 
       {/* 2. Thinking Section (Collapsible, distinct style) */}
@@ -99,7 +83,7 @@ export function GenerationResultCard({
 
       <div className={`flex-1 mb-3 ${isExpanded ? '' : 'overflow-hidden'}`}>
         <div className="mb-4">
-          {status === 'loading' && !generationContentResult && (
+          {status === 'loading' && !generationContentResult && !generationThinkingResult && (
             <p className="text-sm text-gray-400 italic">Waiting for response...</p>
           )}
           {status === 'loading' && generationContentResult && (
@@ -108,7 +92,7 @@ export function GenerationResultCard({
           <p
             className={`text-sm text-gray-700 dark:text-gray-300 leading-relaxed ${isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-6'}`}
           >
-            {generationContentResult}
+            {generationContentResult ?? (status === 'loading' ? null : <i>Response have no content</i>)}
           </p>
         </div>
 
