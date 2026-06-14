@@ -46,6 +46,7 @@ export function MainPage() {
       prev.map((param) => {
         if (param.name === llmParameter.name) {
           const { startVariateFrom, endVariateTo, stepsCount } = param;
+
           if (startVariateFrom !== null && endVariateTo !== null && stepsCount !== null) {
             return { ...param, isVariable: true };
           } else {
@@ -86,16 +87,7 @@ export function MainPage() {
         setGenerationResults
       );
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        setGenerationResults(
-          (prev) =>
-            prev?.map((result) =>
-              result.status === 'loading' ? { ...result, status: 'cancelled', isPartial: false } : result
-            ) ?? []
-        );
-      } else {
-        console.error('Execution failed:', error);
-      }
+      console.error('Execution failed:', error);
     } finally {
       setIsExecuting(false);
     }

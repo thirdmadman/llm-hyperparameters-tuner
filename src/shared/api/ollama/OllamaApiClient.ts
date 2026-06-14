@@ -59,48 +59,45 @@ export class OllamaApiClient {
     let accumulatedThinking: string | null = null;
     let finalResponse: ChatResponse | undefined;
 
-    try {
-      for await (const chunk of stream) {
-        const currentStream = this.requestStreams.find((el) => el.id === uuid);
-        if (!currentStream) {
-          stream.abort();
-          throw new Error('Virtual stream not found, aborting stream');
-        }
+    for await (const chunk of stream) {
+      const currentStream = this.requestStreams.find((el) => el.id === uuid);
+      if (!currentStream) {
+        stream.abort();
+        const error = new Error('Virtual stream not found, aborting stream');
+        error.name = 'AbortError';
 
-        if (currentStream.isPlannedToAbort) {
-          stream.abort();
-          this.requestStreams = this.requestStreams.filter((el) => el.id !== uuid);
-          throw new Error(`Stream aborted: got virtual stream signal for abort, uuid:, ${uuid}`);
-        }
-
-        if (chunk.message.content) {
-          accumulatedContent =
-            accumulatedContent === null ? chunk.message.content : accumulatedContent + chunk.message.content;
-        }
-
-        if (chunk.message.thinking) {
-          accumulatedThinking =
-            accumulatedThinking === null ? chunk.message.thinking : accumulatedThinking + chunk.message.thinking;
-        }
-
-        // Notify subscriber of current accumulation state
-        onChunk(accumulatedContent, accumulatedThinking);
-
-        if (chunk.done) {
-          this.requestStreams = this.requestStreams.map((el) => (el.id === uuid ? { ...el, isDone: true } : el));
-
-          finalResponse = { ...chunk };
-        }
+        throw error;
       }
-    } catch (err: unknown) {
-      // AbortError is expected when client.abort() is called externally
-      if ((err as Error).name === 'AbortError') {
-        // Re-throw so caller knows this stream was cancelled
-        throw err;
+
+      if (currentStream.isPlannedToAbort) {
+        stream.abort();
+        this.requestStreams = this.requestStreams.filter((el) => el.id !== uuid);
+        const error = new Error(`Stream aborted: got virtual stream signal for abort, uuid:, ${uuid}`);
+        error.name = 'AbortError';
+
+        throw error;
       }
-      throw err;
+
+      if (chunk.message.content) {
+        accumulatedContent =
+          accumulatedContent === null ? chunk.message.content : accumulatedContent + chunk.message.content;
+      }
+
+      if (chunk.message.thinking) {
+        accumulatedThinking =
+          accumulatedThinking === null ? chunk.message.thinking : accumulatedThinking + chunk.message.thinking;
+      }
+
+      // Notify subscriber of current accumulation state
+      onChunk(accumulatedContent, accumulatedThinking);
+
+      if (chunk.done) {
+        this.requestStreams = this.requestStreams.map((el) => (el.id === uuid ? { ...el, isDone: true } : el));
+
+        finalResponse = { ...chunk };
+      }
     }
 
-    return { accumulatedContent, accumulatedThinking, finalResponse };
+    return { accumulatedContent, accumulatedThinking, finalResponse: finalResponse ?? null };
   }
 }

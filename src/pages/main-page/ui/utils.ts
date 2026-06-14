@@ -86,11 +86,14 @@ export function updateGenerationResultsInStateByGenerationResult(
   generationResult: {
     accumulatedContent: string | null;
     accumulatedThinking: string | null;
-    finalResponse: ChatResponse | undefined;
-  }
+    finalResponse: ChatResponse | null;
+  } | null
 ): Array<IGenerationResult> {
-  const { finalResponse, accumulatedContent, accumulatedThinking } = generationResult;
+  if (!generationResult) {
+    return prev.map((result, i) => (i === index ? { ...result, ...data } : result));
+  }
 
+  const { finalResponse, accumulatedContent, accumulatedThinking } = generationResult;
   let data: Partial<IGenerationResult> | null = null;
 
   if (!finalResponse) {
@@ -187,8 +190,23 @@ export async function executeGeneration(
 
   const promises = variants.map(async (variant, index) => {
     const onChunk = createThrottledChunkHandler(index, resultsMapRef, setGenerationResults);
+    let generationResult = null;
 
-    const generationResult = await client.streamChat(apiConfig, variant.config, onChunk);
+    try {
+      generationResult = await client.streamChat(apiConfig, variant.config, onChunk);
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        setGenerationResults(
+          (prev) =>
+            prev?.map((result, i) => (i === index ? { ...result, status: 'cancelled', isPartial: false } : result)) ??
+            []
+        );
+
+        return null;
+      } else {
+        console.error('Execution failed:', error);
+      }
+    }
 
     setGenerationResults((prev) =>
       updateGenerationResultsInStateByGenerationResult(prev ?? [], index, generationResult)
