@@ -5,18 +5,19 @@ import { ExpandIcon } from './ExpandIcon';
 import { GenerationStatisticsBlock } from './GenerationStatisticsBlock';
 import { StatusBadge } from './StatusBadge';
 import type { IGenerationResult } from '@/entities/generation-result';
+import type { IOllamaGenerationHyperparameters } from '@/entities/llm-generation-config';
 
 export type TGenerationResultCardStatus = 'idle' | 'completed';
 
 export interface IGenerationResultCardProps {
   variableParameterLabel: string;
-  variableParameterValue: number;
+  variableParameterName: string | null;
   generationResult: IGenerationResult;
 }
 
 export function GenerationResultCard({
   variableParameterLabel,
-  variableParameterValue,
+  variableParameterName,
   generationResult,
 }: IGenerationResultCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -34,6 +35,9 @@ export function GenerationResultCard({
   const toggleToolCalls = () => {
     setIsToolCallsExpanded((prev) => !prev);
   };
+
+  const variableParameterValue =
+    generationResult.configs.hyperparameters[variableParameterName as keyof IOllamaGenerationHyperparameters];
 
   return (
     <div
@@ -82,7 +86,7 @@ export function GenerationResultCard({
       )}
 
       <div className={`flex-1 mb-3 ${isExpanded ? '' : 'overflow-hidden'}`}>
-        <div className="mb-4">
+        <div className="py-2">
           {status === 'loading' && !generationContentResult && !generationThinkingResult && (
             <p className="text-sm text-gray-400 italic">Waiting for response...</p>
           )}

@@ -19,7 +19,7 @@ export function GenerationResultsGrid({ generationResults, llmParameters }: IGen
             <GenerationResultCard
               key={i}
               variableParameterLabel={variableParameter?.label ?? ''}
-              variableParameterValue={variableParameter?.value ?? 0}
+              variableParameterName={variableParameter?.name ?? null}
               generationResult={data}
             />
           ))}

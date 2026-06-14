@@ -48,6 +48,7 @@ export function initGenerationsResults(
       tfs_z: 1,
       typical_p: 1,
       num_thread: 0,
+      seed: 0,
     };
 
     const placeholderPrompts: IGenerationPrompts = {
@@ -260,7 +261,10 @@ export function createGenerationConfigsVariants(
   const variants: TLlmGenerationConfigVariants = [];
 
   for (let i = 0; i < stepsCount; i++) {
-    const variableParameterNewValue = startVariateFrom + stepSize * i;
+    const variableParameterNewValueRaw = startVariateFrom + stepSize * i;
+    const variableParameterNewValue = Number.isInteger(variableParameterNewValueRaw)
+      ? variableParameterNewValueRaw
+      : Number(variableParameterNewValueRaw.toFixed(2));
     const llmParametersWithVariation = llmParameters.map((llmParameter) =>
       llmParameter.name === variableParameter.name
         ? { ...llmParameter, value: variableParameterNewValue }
