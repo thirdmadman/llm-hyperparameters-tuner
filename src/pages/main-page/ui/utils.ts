@@ -15,7 +15,10 @@ import { MOCK_GENERATION_RESULTS } from '@/shared/mocks';
 
 export type TGenerationResultsThrottledMap = Map<number, Partial<IGenerationResult> & { _throttleTimer?: number }>;
 
-// ─── Pure Helpers ────────────────────────────────────────────────────────────
+export type TLlmGenerationConfigVariants = Array<{
+  config: ILlmGenerationConfig;
+  index: number;
+}>;
 
 export function initGenerationsResults(
   model: string,
@@ -117,8 +120,6 @@ export function updateGenerationResultsInStateByGenerationResult(
   return prev.map((result, i) => (i === index ? { ...result, ...data } : result));
 }
 
-// ─── Streaming Throttle Factory ──────────────────────────────────────────────
-
 export function createThrottledChunkHandler(
   index: number,
   resultsMapRef: RefObject<TGenerationResultsThrottledMap>,
@@ -173,8 +174,6 @@ export function createThrottledChunkHandler(
   };
 }
 
-// ─── Execution Core ──────────────────────────────────────────────────────────
-
 export async function executeGeneration(
   client: OllamaApiClient | null,
   apiConfig: ILlmApiConfig,
@@ -201,8 +200,6 @@ export async function executeGeneration(
   return Promise.all(promises);
 }
 
-// ─── Mock Toggle ─────────────────────────────────────────────────────────────
-
 export function toggleMockExecution(
   generationResults: Array<IGenerationResult> | null,
   setIsExecuting: React.Dispatch<React.SetStateAction<boolean>>,
@@ -215,13 +212,6 @@ export function toggleMockExecution(
     setGenerationResults(MOCK_GENERATION_RESULTS);
   }
 }
-
-export type TLlmGenerationConfigVariants = Array<{
-  config: ILlmGenerationConfig;
-  index: number;
-}>;
-
-// ─── Parameter Variants ──────────────────────────────────────────────────────
 
 export function createGenerationConfigsVariants(
   llmParameters: Array<ILlmParameter>,
