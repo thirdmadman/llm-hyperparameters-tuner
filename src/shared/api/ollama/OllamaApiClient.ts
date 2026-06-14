@@ -4,26 +4,26 @@ import type { ChatResponse, Message } from 'ollama/browser';
 import type { ILlmApiConfig } from '@/entities/llm-api-config';
 import type { ILlmGenerationConfig } from '@/entities/llm-generation-config';
 
+interface IVirtualAbortableStream {
+  id: string;
+  isDone: boolean;
+  isPlannedToAbort: boolean;
+}
+
 export class OllamaApiClient {
   private client: Ollama;
+  private requestStreams: Array<IVirtualAbortableStream> = [];
 
   constructor(apiConfig?: ILlmApiConfig) {
     const host = apiConfig?.url ?? 'http://127.0.0.1:11434';
     this.client = new Ollama({ host });
   }
 
-  /**
-   * Abort ALL active streams on this client instance.
-   * Each stream's `for await` loop will throw an AbortError.
-   */
   abort() {
-    this.client.abort();
+    this.requestStreams = this.requestStreams.filter((el) => !el.isDone);
+    this.requestStreams = this.requestStreams.map((el) => ({ ...el, isPlannedToAbort: true }));
   }
 
-  /**
-   * Streaming chat that calls `onChunk` with each accumulated result.
-   * Returns the final `ChatResponse` when the stream completes (or throws AbortError).
-   */
   async streamChat(
     apiConfig: ILlmApiConfig,
     llmParameters: ILlmGenerationConfig,
@@ -38,6 +38,16 @@ export class OllamaApiClient {
     }
     messages.push({ role: 'user', content: llmParameters.promptConfigs.prompt });
 
+    const uuid = crypto.randomUUID();
+
+    const steamWrapper: IVirtualAbortableStream = {
+      id: uuid,
+      isDone: false,
+      isPlannedToAbort: false,
+    };
+
+    this.requestStreams.push(steamWrapper);
+
     const stream = await this.client.chat({
       model: selectedModelName,
       messages,
@@ -51,6 +61,18 @@ export class OllamaApiClient {
 
     try {
       for await (const chunk of stream) {
+        const currentStream = this.requestStreams.find((el) => el.id === uuid);
+        if (!currentStream) {
+          stream.abort();
+          throw new Error('Virtual stream not found, aborting stream');
+        }
+
+        if (currentStream.isPlannedToAbort) {
+          stream.abort();
+          this.requestStreams = this.requestStreams.filter((el) => el.id !== uuid);
+          throw new Error(`Stream aborted: got virtual stream signal for abort, uuid:, ${uuid}`);
+        }
+
         if (chunk.message.content) {
           accumulatedContent =
             accumulatedContent === null ? chunk.message.content : accumulatedContent + chunk.message.content;
@@ -65,6 +87,8 @@ export class OllamaApiClient {
         onChunk(accumulatedContent, accumulatedThinking);
 
         if (chunk.done) {
+          this.requestStreams = this.requestStreams.map((el) => (el.id === uuid ? { ...el, isDone: true } : el));
+
           finalResponse = { ...chunk };
         }
       }

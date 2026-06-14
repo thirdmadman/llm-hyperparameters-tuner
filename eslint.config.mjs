@@ -140,6 +140,7 @@ export default defineConfig(
           },
         },
       ],
+      "@typescript-eslint/prefer-for-of": "off"
     },
   }
 );
