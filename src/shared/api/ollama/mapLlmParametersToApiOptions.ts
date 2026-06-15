@@ -4,7 +4,9 @@ import type { ILlmParameter } from '@/entities/llm-parameter';
 export function mapLlmParametersToApiOptions(llmParameters: Array<ILlmParameter>) {
   const config: Record<string, number> = {};
 
-  for (const param of llmParameters) {
+  const onlyEnabledLlmParameters = llmParameters.filter((p) => p.isEnabled);
+
+  for (const param of onlyEnabledLlmParameters) {
     config[param.name] = param.value;
   }
 

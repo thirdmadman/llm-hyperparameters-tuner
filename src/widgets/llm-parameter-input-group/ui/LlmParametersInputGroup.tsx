@@ -3,28 +3,34 @@ import type { ILlmParameter } from '@/entities/llm-parameter';
 
 export interface LlmParametersInputGroupProps {
   llmParameters: Array<ILlmParameter>;
-  onParameterUpdateEvent: (param: ILlmParameter) => void;
-  onParameterSelectedEvent: (param: ILlmParameter) => void;
+  onParameterUpdateEvent: (parameter: ILlmParameter) => void;
+  onParameterSelectedEvent: (parameter: ILlmParameter) => void;
+  onToggleEnabledEvent: (parameter: ILlmParameter) => void;
 }
 
 export function LlmParametersInputGroup({
   llmParameters,
   onParameterUpdateEvent,
   onParameterSelectedEvent,
+  onToggleEnabledEvent,
 }: LlmParametersInputGroupProps) {
-  const selectedVariableParameter = llmParameters.find((param) => param.isVariable);
+  const selectedVariableParameter = llmParameters.find((parameter) => parameter.isVariable);
+
   return (
     <div className="flex flex-col gap-4 ">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Parameters</h2>
       <div className="flex flex-col gap-4">
-        {llmParameters.map((param) => (
+        {llmParameters.map((parameter) => (
           <LlmParameterInput
-            key={param.name}
-            llmParameter={param}
+            key={parameter.name}
+            llmParameter={parameter}
             onSelectEvent={() => {
-              onParameterSelectedEvent(param);
+              onParameterSelectedEvent(parameter);
             }}
             onUpdateEvent={onParameterUpdateEvent}
+            onToggleEnabledEvent={() => {
+              onToggleEnabledEvent(parameter);
+            }}
           />
         ))}
       </div>

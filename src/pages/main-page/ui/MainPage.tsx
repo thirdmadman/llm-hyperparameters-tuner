@@ -41,27 +41,55 @@ export function MainPage() {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
+  const handleToggleParameterEnabled = (llmParameter: ILlmParameter) => {
+    setLlmParameters((prev) =>
+      prev.map((parameter) => {
+        if (parameter.name !== llmParameter.name) {
+          return parameter;
+        }
+
+        const { isEnabled } = parameter;
+
+        if (isEnabled && parameter.isVariable) {
+          return {
+            ...parameter,
+            isEnabled: false,
+            isVariable: false,
+          };
+        }
+
+        return { ...parameter, isEnabled: !isEnabled };
+      })
+    );
+  };
+
   const handleVariableParameterSelect = (llmParameter: ILlmParameter) => {
     setLlmParameters((prev) =>
-      prev.map((param) => {
-        if (param.name === llmParameter.name) {
-          const { startVariateFrom, endVariateTo, stepsCount } = param;
+      prev.map((parameter) => {
+        if (parameter.name === llmParameter.name) {
+          const { startVariateFrom, endVariateTo, stepsCount } = parameter;
 
           if (startVariateFrom !== null && endVariateTo !== null && stepsCount !== null) {
-            return { ...param, isVariable: true };
+            return { ...parameter, isVariable: true };
           } else {
-            return { ...param, startVariateFrom: param.min, endVariateTo: param.max, stepsCount: 1, isVariable: true };
+            return {
+              ...parameter,
+              startVariateFrom: parameter.min,
+              endVariateTo: parameter.max,
+              stepsCount: 1,
+              isVariable: true,
+            };
           }
         }
 
-        return { ...param, isVariable: false };
+        return { ...parameter, isVariable: false };
       })
     );
   };
 
   const handleParameterUpdate = (llmParameter: ILlmParameter) => {
     setLlmParameters((prev) =>
-      prev.map((param) => (param.name === llmParameter.name ? { ...param, ...llmParameter } : param))
+      prev.map((parameter) => (parameter.name === llmParameter.name ? { ...parameter, ...llmParameter } : parameter))
     );
   };
 
@@ -119,6 +147,7 @@ export function MainPage() {
             llmParameters={llmParameters}
             onParameterUpdateEvent={handleParameterUpdate}
             onParameterSelectedEvent={handleVariableParameterSelect}
+            onToggleEnabledEvent={handleToggleParameterEnabled}
           />
         </section>
 

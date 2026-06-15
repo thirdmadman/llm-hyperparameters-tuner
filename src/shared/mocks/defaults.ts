@@ -10,6 +10,7 @@ export const DEFAULT_API_CONFIG: ILlmApiConfig = {
 
 export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
   {
+    isEnabled: true,
     label: 'Context size',
     name: 'num_ctx',
     value: 1024,
@@ -21,6 +22,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    isEnabled: true,
     label: 'Max tokens',
     name: 'num_predict',
     value: 512,
@@ -32,6 +34,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    isEnabled: false,
     label: 'Temperature',
     name: 'temperature',
     value: 1,
@@ -43,6 +46,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    isEnabled: false,
     label: 'Seed',
     name: 'seed',
     value: -1,
@@ -54,6 +58,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    isEnabled: false,
     label: 'Min P',
     name: 'min_p',
     value: 0.9,
@@ -65,6 +70,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    isEnabled: false,
     label: 'Top K',
     name: 'top_k',
     value: 0,
@@ -76,6 +82,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    isEnabled: false,
     label: 'Top P',
     name: 'top_p',
     value: 0.9,
@@ -87,6 +94,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    isEnabled: false,
     label: 'Presence penalty',
     name: 'presence_penalty',
     value: 0,
@@ -98,6 +106,7 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
     stepsCount: null,
   },
   {
+    isEnabled: false,
     label: 'Repeat penalty',
     name: 'repeat_penalty',
     value: 1,

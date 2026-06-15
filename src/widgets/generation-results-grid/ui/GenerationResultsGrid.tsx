@@ -8,7 +8,7 @@ interface IGenerationResultsGridProps {
 }
 
 export function GenerationResultsGrid({ generationResults, llmParameters }: IGenerationResultsGridProps) {
-  const variableParameter = llmParameters.find((param) => param.isVariable);
+  const variableParameter = llmParameters.find((parameter) => parameter.isVariable);
 
   return (
     <div>

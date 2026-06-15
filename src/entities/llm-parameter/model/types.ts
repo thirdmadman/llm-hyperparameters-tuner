@@ -1,4 +1,5 @@
 export interface ILlmParameter {
+  isEnabled: boolean;
   label: string;
   name: string;
   value: number;

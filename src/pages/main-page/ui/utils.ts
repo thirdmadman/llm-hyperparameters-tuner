@@ -236,7 +236,7 @@ export function createGenerationConfigsVariants(
   llmParameters: Array<ILlmParameter>,
   basePrompts: IGenerationPrompts
 ): TLlmGenerationConfigVariants {
-  const variableParameter = llmParameters.find((llmParameter) => llmParameter.isVariable);
+  const variableParameter = llmParameters.find((llmParameter) => llmParameter.isVariable && llmParameter.isEnabled);
   if (!variableParameter) {
     return [
       {
