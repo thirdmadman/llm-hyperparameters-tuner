@@ -3,10 +3,10 @@
 ## 1. Project Context & Hard Constraints
 
 - **Purpose:** Isolate and compare how varying exactly one LLM parameter affects outputs for a fixed prompt/model/seed setup.
-- **Architecture:** Feature Sliced Design (FSD) with strict layer boundaries. No external state managers, no Context API, no localStorage/URL persistence. In-memory `useState` only.
-- **API Interaction:** Parallel, non-streaming requests to Ollama via native `fetch`. All parameters frozen except one stepped variable. Fixed seed by default (toggleable). Full responses awaited before aggregation.
-- **UI/UX:** Constrained ~1024px wrapper. Top: grouped static params + variable range controller. Middle: prompt textarea → execute/cancel button. Bottom: responsive 4-column grid with uniform-height cards. Input panel collapses during execution, expands on complete/cancel. Tailwind CSS only.
-- **Tooling:** TypeScript (strict), ESLint + Prettier, Vite dev server. Zero external UI component libraries.
+- **Architecture:** Feature Sliced Design (FSD) with strict layer boundaries. No external state managers, no Context API, no localStorage/URL persistence. In-memory `useState` + `useRef` only.
+- **API Interaction:** Parallel, streaming requests to Ollama via `ollama/browser` package with virtual abort mechanism (not native `fetch` or `AbortController`). All parameters frozen except one stepped variable. Seed is a regular toggleable parameter, not fixed by default. Full responses awaited before aggregation with throttled real-time updates (100ms interval).
+- **UI/UX:** Constrained `max-w-screen-lg` responsive wrapper (`w-full max-w-screen-lg`). Top: grouped static params + variable range controller. Middle: prompt textarea → execute/cancel button. Bottom: responsive grid (1/2/4 columns, not fixed 4-column) with `min-h-[280px]` minimum-height cards. Only the prompt panel collapses during execution; LLM API config and parameters panels remain visible. Tailwind CSS only.
+- **Tooling:** TypeScript (strict), ESLint + Prettier, Vite dev server on port 3000. Zero external UI component libraries. Dependencies: `react`, `react-dom`, `ollama`, `tailwindcss`, `@tailwindcss/vite`.
 
 ## 2. Feature Sliced Design (FSD) Boundaries & Import Rules
 
@@ -33,63 +33,110 @@
 - Shared modules must remain domain-independent.
 - Type definitions should flow downward through the dependency graph and never upward.
 
+### Widget Composition (Actual Structure)
+
+The application has **no `app/` or `features/` slices** currently implemented. Business logic that would belong in `features/` resides in `pages/main-page/ui/utils.ts`. The actual page structure is:
+
+- **Page:** `pages/main-page/` → composes all widgets
+- **Widgets:**
+  - `widgets/llm-api-config-group/` — API URL + Model Name inputs
+  - `widgets/llm-parameter-input-group/` — Parameter list with enable/disable toggles and variable selection
+  - `widgets/prompt-inputs-group/` — System prompt + user prompt textareas (only this collapses during execution)
+  - `widgets/generation-results-grid/` — Responsive grid of result cards
+- **Result card components:**
+  - `GenerationResultCard` — Shows parameter value, status badge, response content, thinking process, tool calls, and generation statistics
+  - `StatusBadge` — Visual status indicator
+  - `GenerationStatisticsBlock` — Token counts, durations, eval metrics
+  - `ExpandButton` / `ExpandIcon` — Expand/collapse controls
+
 ## 3. Code Generation Guidelines & Component Structure
 
-- **React Components:** Functional only. Explicit prop interfaces. No default exports without named fallbacks if consumed by FSD index files.
+- **React Components:** Functional only. Explicit prop interfaces (prefixed with `I`, ex. `IGenerationResultCardProps`). Named exports preferred.
 
   ```tsx
   export function InputPanel({ onExecute, onCancel, config } : IInputPanelProps) { ... }
   ```
 
-- **TypeScript:** Strict mode enforced. Zero `any`. Prefer explicit over inference. Use discriminated unions for execution phases (`idle | executing | completed | cancelled`). Interfaces prefixed with "I" (ex. "IResult") and types prefixed with "T" (ex. `TResult`, `TConfig`).
-- **Tailwind CSS:** Utility-only. Group classes by function (structure → layout → state → theme). No arbitrary values unless absolutely necessary (justify with comment). Enforce uniform heights via `flex min-h-[...]` or `grid-rows`.
-- **File Organization:** One feature/component per directory. `index.ts` re-exports for clean imports. Types live in `types.ts` or directly in the main module if single-use.
+- **TypeScript:** Strict mode enforced. Zero `any`. Prefer explicit over inference. Interfaces prefixed with "I" (ex. `IGenerationResult`, `ILlmParameter`). Types prefixed with "T" where used (ex. `TLlmGenerationConfigVariants`, `TGenerationResultsThrottledMap`).
+- **Tailwind CSS:** Utility-only. Group classes by function (structure → layout → state → theme). No arbitrary values unless absolutely necessary (justify with comment).
+- **File Organization:** One feature/component per directory. `index.ts` re-exports for clean imports (barrel exports). Types live in `types.ts` or directly in the main module if single-use. Each widget/entity has `model/types.ts` for type definitions and `index.ts` for barrel exports.
 
 ## 4. State Management & Prop Composition Rules
 
-- All state lives in component-scoped `useState`. Lift only vertically through explicit props.
-- Execution lifecycle flag (`isExecuting: boolean`) must be centralized in the orchestrating widget/page and passed down via props or local state context where strictly necessary.
-- Abort controllers are managed as `useRef<AbortController[]>([])` or within `features/execution-dispatcher`. Never leak outside feature boundaries.
-- Results array shape is fixed post-execution, ex.:
+- All state lives in component-scoped `useState` hooks. Lift only vertically through explicit props.
+- Execution lifecycle flag (`isExecuting: boolean`) lives in the page-level component (`MainPage`) and is passed down via props.
+- **Virtual abort mechanism:** Abort is managed via `requestStreams: Array<IVirtualAbortableStream>` inside `OllamaApiClient`. Each stream has `id`, `isDone`, `isPlannedToAbort` flags. On cancel, all streams get `isPlannedToAbort: true` and are filtered out once `isDone: true`. No `AbortController` instances are used.
+- Results array shape (`IGenerationResult`):
 
   ```ts
-  type TestResult = {
-    id: string;
-    config: LLMConfigSnapshot;
-    response: string;
-    status: 'success' | 'error';
-    timestamp: number;
+  type IGenerationResult = {
+    model: string;
+    configs: ILlmGenerationConfig;
+    createdAt: Date;
+    status: 'error' | 'loading' | 'ready' | 'cancelled';
+    generationContentResult: string | null;
+    generationThinkingResult: string | null;
+    isPartial: boolean;
+    generationToolCalls: Array<{ function: { name: string; arguments: string } }> | null;
+    doneReason?: string;
+    totalDuration?: number;
+    loadDuration?: number;
+    promptEvalCount?: number;
+    promptEvalDuration?: number;
+    evalCount?: number;
+    evalDuration?: number;
   }
   ```
 
+- **Throttled updates:** During streaming, `setGenerationResults` is throttled to every 100ms via `createThrottledChunkHandler` using a `_throttleTimer` ref on the map.
+
 ## 5. API Interaction & Execution Lifecycle Standards
 
-- **Payload Construction:** Merge static parameters + stepped variable parameter + `seed` (fixed/random) + `"stream": false`. Validate against schema before dispatch.
-- **Parallel Dispatch:** Use `Promise.all(promises)` with explicit abort pool tracking. Do not use `setTimeout` or sequential chains.
-- **Cancellation:** On cancel, iterate active abort controllers → `.abort()`, catch `DOMException: aborted`, clear state, restore UI to idle.
-- **Error Handling:** Fail-fast. Network/timeout → `{ status: 'error', message, code }`. Invalid payload → early exit with console error + UI toast/alert (if implemented later).
+- **API Client:** Uses `ollama/browser` package (`import { Ollama } from 'ollama/browser'`). Constructor takes `{ host }` from `ILlmApiConfig.url`. Default host: `http://127.0.0.1:11434`.
+
+- **Payload Construction:** Parameters are mapped via `mapLlmParametersToApiOptions(llmParameters)` which filters enabled parameters and builds a `Record<string, number>` from their `name`/`value` fields. Returned as `IOllamaGenerationHyperparameters`. No schema validation before dispatch.
+
+- **Execution Flow:**
+  1. `createGenerationConfigsVariants(llmParameters, generationPrompts)` generates stepped configs — finds the variable parameter and creates one config per step using linear interpolation
+  2. `initGenerationsResults(modelName, variants)` creates placeholder results with `status: 'loading'` and `isPartial: true`
+  3. `executeGeneration(client, apiConfig, variants, resultsMapRef, setGenerationResults)` dispatches parallel streaming requests
+  4. Each request calls `client.streamChat()` with throttled chunk handler callback
+  5. Results aggregated via `Promise.all(promises)` — each promise handles its own error/abort case
+
+- **Parallel Dispatch:** All interpolated configurations trigger independent `streamChat` calls via `Promise.all`. Each uses virtual abort tracking via `requestStreams`. No `setTimeout` or sequential chains.
+
+- **Cancellation:** On cancel, `ollamaApiClient.abort()` sets `isPlannedToAbort: true` on all streams. The stream loop checks this flag each iteration, calls `stream.abort()`, and throws `AbortError`. Pending promises reject cleanly, state updates to `'cancelled'`, UI returns to idle.
+
+- **Error Handling:**
+  - Abort: `{ status: 'cancelled', isPartial: false }` — caught as `error.name === 'AbortError'`
+  - Network/Server: `{ status: 'error', isPartial: false, ...data }` — logged to console.error
+  - Invalid payload: early return with no execution (handled by `createGenerationConfigsVariants` returning single config when no variable parameter)
+  - Missing client: `Promise.reject(new Error('API client is not initialized'))`
+
+- **Mock Execution:** Development toggle button at bottom-right (`"▶ Simulate Complete"` / `"⏸ Simulate Executing"`) uses `MOCK_GENERATION_RESULTS` from defaults for testing without live Ollama.
 
 ## 6. Iterative Development Workflow (Step-by-Step)
 
 - **Foundation:** Initialize Vite + TypeScript + Tailwind, plus linting/formatting setup
-- **Architecture:** Set up FSD directory structure and configure path aliases
+- **Architecture:** Set up FSD directory structure and configure path aliases in `vite.config.ts` and `tsconfig.app.json`
 - **Domain:** Define core entities and data models (LLM config, results, execution states)
-- **Shared Layer:** Implement utilities and Ollama API client with payload transformation
-- **Features:** Build parameter stepping logic and execution dispatcher with parallel abort control
+- **Shared Layer:** Implement `ollama/browser` client with virtual abort, parameter mapper utility, default mocks
+- **Features:** Business logic in `pages/main-page/ui/utils.ts`: parameter stepping interpolation, throttled streaming handler, parallel execution dispatcher
 - **Widgets:** Create input/configuration UI and results grid components
 - **Orchestration:** Connect features and widgets in page-level workflow and state transitions
 - **Integration:** Wire application entry point and ensure end-to-end execution flow
-- **Validation:** Verify UI behavior, performance, responsiveness, and strict FSD compliance
+- **Validation:** Verify UI behavior, performance, responsiveness
 
 ## 7. Validation, Testing & Self-Audit Prompts
 
 - **Pre-Merge Checklist:**
   - [ ] No `any`, no Context API, no external state libs
   - [ ] FSD import paths verified, zero circular deps
-  - [ ] Parallel dispatch uses `Promise.all` + explicit abort pool
-  - [ ] Input panel collapses/expands correctly on execute/cancel
-  - [ ] Grid cards are uniform height with parameter hints + expandable text
+  - [ ] Parallel dispatch uses `Promise.all` + virtual abort pool via `OllamaApiClient.requestStreams`
+  - [ ] Prompt panel collapses/expands correctly on execute/cancel; other panels remain visible
+  - [ ] Grid uses responsive breakpoints (1/2/4 columns) with `min-h-[280px]` card minimums
   - [ ] ESLint & Prettier pass with zero errors/warnings
-- **Manual QA Focus:** Parallel request timing, cancellation responsiveness, grid layout consistency, step interpolation accuracy, seed behavior (fixed vs random)
+- **Manual QA Focus:** Streaming response timing, cancellation responsiveness via virtual abort, grid layout consistency across breakpoints, step interpolation accuracy
+- **Note:** No test framework or test files exist in the current codebase.
 - **Agent Self-Audit Prompt:**
-  > "Verify FSD boundaries are strictly maintained. Confirm state lives only in useState. Ensure API uses non-streaming fetch with parallel dispatch and abort control. Check UI matches constrained wrapper, collapse/expand behavior, and uniform grid heights. Report any architectural drift."
+  > "Verify FSD boundaries are strictly maintained. Confirm state lives only in useState/useRef. Ensure API uses ollama/browser streaming with virtual abort mechanism. Check UI matches responsive wrapper, prompt-only collapse behavior, and responsive grid breakpoints. Report any architectural drift."
