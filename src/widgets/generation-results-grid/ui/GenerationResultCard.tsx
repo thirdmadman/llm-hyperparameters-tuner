@@ -53,9 +53,11 @@ export function GenerationResultCard({
           <ExpandButton isExpanded={isExpanded} onToggle={toggleExpand} />
           <StatusBadge status={status} isSmall={!isExpanded} />
         </div>
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-          {variableParameterLabel} = {variableParameterValue}
-        </span>
+        {variableParameterName && (
+          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            {variableParameterLabel} = {variableParameterValue}
+          </span>
+        )}
       </div>
 
       {/* 2. Thinking Section (Collapsible, distinct style) */}
