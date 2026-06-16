@@ -46,7 +46,7 @@ export function LlmParameterInput({
           {/* Enable/Disable Toggle Button */}
           <button
             onClick={onToggleEnabledEvent}
-            className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors border ${
+            className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors border cursor-pointer ${
               llmParameter.isEnabled
                 ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -58,16 +58,16 @@ export function LlmParameterInput({
             onClick={() => {
               onSelectEvent();
             }}
-            className={`shrink-0 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            className={`shrink-0 px-4 py-2 text-sm font-medium rounded-md transition-colors border cursor-pointer ${
               !llmParameter.isEnabled
                 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                 : llmParameter.isVariable
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  : 'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/30'
             }`}
             disabled={!llmParameter.isEnabled}
           >
-            {llmParameter.isVariable ? '✓ Selected as Variable' : 'Select as Variable'}
+            {llmParameter.isVariable ? '✕ Clear Variable' : '⬡ Set Variable'}
           </button>
         </div>
       </div>

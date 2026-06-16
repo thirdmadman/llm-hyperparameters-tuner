@@ -64,8 +64,24 @@ export function MainPage() {
   };
 
   const handleVariableParameterSelect = (llmParameter: ILlmParameter) => {
-    setLlmParameters((prev) =>
-      prev.map((parameter) => {
+    setLlmParameters((prev) => {
+      // If this parameter is already the variable, deselect it
+      if (llmParameter.isVariable) {
+        return prev.map((parameter) =>
+          parameter.name === llmParameter.name
+            ? {
+                ...parameter,
+                isVariable: false,
+                startVariateFrom: null,
+                endVariateTo: null,
+                stepsCount: null,
+              }
+            : parameter
+        );
+      }
+
+      // Otherwise, select it as the new variable and deselect others
+      return prev.map((parameter) => {
         if (parameter.name === llmParameter.name) {
           const { startVariateFrom, endVariateTo, stepsCount } = parameter;
 
@@ -83,8 +99,8 @@ export function MainPage() {
         }
 
         return { ...parameter, isVariable: false };
-      })
-    );
+      });
+    });
   };
 
   const handleParameterUpdate = (llmParameter: ILlmParameter) => {
@@ -164,14 +180,14 @@ export function MainPage() {
         <section className="mb-6">
           <div className="flex justify-end gap-2">
             <button
-              className="px-5 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
               disabled={isExecuting}
               onClick={handleExecute}
             >
               Execute
             </button>
             <button
-              className="px-5 py-2 text-sm font-medium rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-2 text-sm font-medium rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
               disabled={!isExecuting}
               onClick={handleCancel}
             >
