@@ -10,10 +10,15 @@ import {
 } from './utils';
 import type { IGenerationResult } from '@/entities/generation-result';
 import type { ILlmApiConfig } from '@/entities/llm-api-config';
-import type { IGenerationPrompts } from '@/entities/llm-generation-config';
+import type { IGenerationPrompts, IPromptVariant } from '@/entities/llm-generation-config';
 import type { ILlmParameter } from '@/entities/llm-parameter';
 import { OllamaApiClient } from '@/shared/api/ollama/OllamaApiClient';
-import { DEFAULT_API_CONFIG, DEFAULT_GENERATION_PROMPTS, DEFAULT_LLM_PARAMETERS } from '@/shared/mocks';
+import {
+  DEFAULT_API_CONFIG,
+  DEFAULT_GENERATION_PROMPTS,
+  DEFAULT_LLM_PARAMETERS,
+  createDefaultPromptPair,
+} from '@/shared/mocks';
 import { GenerationResultsGrid } from '@/widgets/generation-results-grid';
 import { LlmApiConfigGroup } from '@/widgets/llm-api-config-group';
 import { LlmParametersInputGroup } from '@/widgets/llm-parameter-input-group';
@@ -26,6 +31,7 @@ export function MainPage() {
   const [llmApiConfig, setLlmApiConfig] = useState<ILlmApiConfig>(DEFAULT_API_CONFIG);
   const [llmParameters, setLlmParameters] = useState<Array<ILlmParameter>>(DEFAULT_LLM_PARAMETERS);
   const [generationPrompts, setGenerationPrompts] = useState<IGenerationPrompts>(DEFAULT_GENERATION_PROMPTS);
+  const [isPromptVariableSelected, setIsPromptVariableSelected] = useState(false);
 
   const [generationResults, setGenerationResults] = useState<Array<IGenerationResult> | null>(null);
 
@@ -64,6 +70,7 @@ export function MainPage() {
   };
 
   const handleVariableParameterSelect = (llmParameter: ILlmParameter) => {
+    setIsPromptVariableSelected(false);
     setLlmParameters((prev) => {
       // If this parameter is already the variable, deselect it
       if (llmParameter.isVariable) {
@@ -109,13 +116,65 @@ export function MainPage() {
     );
   };
 
-  const handlePromptsChange = (newPrompts: IGenerationPrompts) => {
-    setGenerationPrompts(newPrompts);
+  const handleSystemPromptChange = (value: string | null) => {
+    setGenerationPrompts((prev) => ({ ...prev, systemPrompt: value }));
+  };
+
+  const handlePromptChange = (value: string) => {
+    setGenerationPrompts((prev) => ({ ...prev, prompt: value }));
+  };
+
+  const handleSetPromptVariable = () => {
+    setIsPromptVariableSelected(true);
+    setLlmParameters((prev) => prev.map((parameter) => ({ ...parameter, isVariable: false })));
+  };
+
+  const handleClearPromptVariable = () => {
+    setIsPromptVariableSelected(false);
+  };
+
+  const handleAddPromptVariantAndClearCurrent = (systemPromptVal: string | null, promptVal: string) => {
+    setGenerationPrompts((prev) => {
+      const newPromptVariant = createDefaultPromptPair(systemPromptVal, promptVal);
+      return {
+        ...prev,
+        promptVariants: [...prev.promptVariants, newPromptVariant],
+        systemPrompt: null,
+        prompt: '',
+      };
+    });
+  };
+
+  const handleVariantUpdate = (variantToUpdate: IPromptVariant) => {
+    setGenerationPrompts((prev) => ({
+      ...prev,
+      promptVariants: prev.promptVariants.map((p) =>
+        p.id === variantToUpdate.id ? { ...variantToUpdate, isEditing: false } : p
+      ),
+    }));
+  };
+
+  const handleVariantDelete = (idToDelete: string) => {
+    setGenerationPrompts((prev) => ({
+      ...prev,
+      promptVariants: prev.promptVariants.filter((p) => p.id !== idToDelete),
+    }));
+  };
+
+  const handleVariantToggleEdit = (idToToggle: string) => {
+    setGenerationPrompts((prev) => ({
+      ...prev,
+      promptVariants: prev.promptVariants.map((p) => (p.id === idToToggle ? { ...p, isEditing: !p.isEditing } : p)),
+    }));
   };
 
   const handleExecute = async () => {
     setIsExecuting(true);
-    const llmGenerationConfigVariants = createGenerationConfigsVariants(llmParameters, generationPrompts);
+    const llmGenerationConfigVariants = createGenerationConfigsVariants(
+      llmParameters,
+      generationPrompts,
+      isPromptVariableSelected
+    );
     const generationsResults = initGenerationsResults(llmApiConfig.selectedModelName, llmGenerationConfigVariants);
 
     generationResultsThrottledMapRef.current = new Map<number, Partial<IGenerationResult>>();
@@ -160,6 +219,7 @@ export function MainPage() {
         {/* Top: Parameter List (Single Column) */}
         <section className="mb-6 p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <LlmParametersInputGroup
+            isVariableSelectionDisabled={isPromptVariableSelected}
             llmParameters={llmParameters}
             onParameterUpdateEvent={handleParameterUpdate}
             onParameterSelectedEvent={handleVariableParameterSelect}
@@ -172,7 +232,15 @@ export function MainPage() {
           <PromptInputsGroup
             isCollapsed={isExecuting}
             prompts={generationPrompts}
-            onPromptsChange={handlePromptsChange}
+            isVariableSelected={isPromptVariableSelected}
+            onSetVariable={handleSetPromptVariable}
+            onClearVariable={handleClearPromptVariable}
+            onAddPromptVariantAndClearCurrent={handleAddPromptVariantAndClearCurrent}
+            onSystemPromptChange={handleSystemPromptChange}
+            onPromptChange={handlePromptChange}
+            onVariantUpdate={handleVariantUpdate}
+            onVariantDelete={handleVariantDelete}
+            onVariantToggleEdit={handleVariantToggleEdit}
           />
         </section>
 
@@ -198,7 +266,11 @@ export function MainPage() {
 
         {/* Bottom: Results Grid */}
         <section>
-          <GenerationResultsGrid generationResults={generationResults} llmParameters={llmParameters} />
+          <GenerationResultsGrid
+            generationResults={generationResults}
+            isPromptVariableSelected={isPromptVariableSelected}
+            llmParameters={llmParameters}
+          />
         </section>
       </div>
 

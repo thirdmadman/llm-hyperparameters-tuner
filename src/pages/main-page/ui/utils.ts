@@ -54,6 +54,7 @@ export function initGenerationsResults(
     const placeholderPrompts: IGenerationPrompts = {
       systemPrompt: null,
       prompt: 'This is a placeholder prompt.',
+      promptVariants: [],
     };
 
     const data: IGenerationResult = {
@@ -234,13 +235,42 @@ export function toggleMockExecution(
 
 export function createGenerationConfigsVariants(
   llmParameters: Array<ILlmParameter>,
-  basePrompts: IGenerationPrompts
+  basePrompts: IGenerationPrompts,
+  isPromptVariableSelected: boolean
 ): TLlmGenerationConfigVariants {
   const variableParameter = llmParameters.find((llmParameter) => llmParameter.isVariable && llmParameter.isEnabled);
+  const currentPrompts = {
+    systemPrompt: basePrompts.systemPrompt,
+    prompt: basePrompts.prompt,
+    promptVariants: [],
+  };
+
+  if (isPromptVariableSelected) {
+    const promptVariants =
+      basePrompts.promptVariants.length > 0
+        ? basePrompts.promptVariants.map((variant) => ({
+            systemPrompt: variant.systemPrompt,
+            prompt: variant.prompt,
+            promptVariants: [],
+          }))
+        : [currentPrompts];
+
+    return promptVariants.map((promptConfigs, index) => ({
+      config: {
+        promptConfigs,
+        hyperparameters: mapLlmParametersToApiOptions(llmParameters),
+      },
+      index,
+    }));
+  }
+
   if (!variableParameter) {
     return [
       {
-        config: { promptConfigs: basePrompts, hyperparameters: mapLlmParametersToApiOptions(llmParameters) },
+        config: {
+          promptConfigs: currentPrompts,
+          hyperparameters: mapLlmParametersToApiOptions(llmParameters),
+        },
         index: 0,
       },
     ];
@@ -248,16 +278,19 @@ export function createGenerationConfigsVariants(
 
   const { startVariateFrom, endVariateTo, stepsCount } = variableParameter;
 
-  if (startVariateFrom === null || endVariateTo === null || stepsCount === null) {
+  if (startVariateFrom === null || endVariateTo === null || stepsCount === null || stepsCount < 1) {
     return [
       {
-        config: { promptConfigs: basePrompts, hyperparameters: mapLlmParametersToApiOptions(llmParameters) },
+        config: {
+          promptConfigs: currentPrompts,
+          hyperparameters: mapLlmParametersToApiOptions(llmParameters),
+        },
         index: 0,
       },
     ];
   }
 
-  const stepSize = (endVariateTo - startVariateFrom) / (stepsCount - 1);
+  const stepSize = stepsCount > 1 ? (endVariateTo - startVariateFrom) / (stepsCount - 1) : 0;
   const variants: TLlmGenerationConfigVariants = [];
 
   for (let i = 0; i < stepsCount; i++) {
@@ -265,23 +298,21 @@ export function createGenerationConfigsVariants(
     const variableParameterNewValue = Number.isInteger(variableParameterNewValueRaw)
       ? variableParameterNewValueRaw
       : Number(variableParameterNewValueRaw.toFixed(2));
-    const llmParametersWithVariation = llmParameters.map((llmParameter) =>
+    const llmParametersWithVariant = llmParameters.map((llmParameter) =>
       llmParameter.name === variableParameter.name
         ? { ...llmParameter, value: variableParameterNewValue }
         : llmParameter
     );
 
-    const hyperparameters = mapLlmParametersToApiOptions(llmParametersWithVariation);
+    const hyperparameters = mapLlmParametersToApiOptions(llmParametersWithVariant);
 
-    const variant = {
+    variants.push({
       config: {
-        promptConfigs: basePrompts,
+        promptConfigs: currentPrompts,
         hyperparameters,
       },
       index: i,
-    };
-
-    variants.push(variant);
+    });
   }
 
   return variants;

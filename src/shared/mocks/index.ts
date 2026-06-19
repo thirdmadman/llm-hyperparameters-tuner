@@ -3,4 +3,5 @@ export {
   DEFAULT_LLM_PARAMETERS,
   DEFAULT_GENERATION_PROMPTS,
   MOCK_GENERATION_RESULTS,
+  createDefaultPromptPair,
 } from './defaults';

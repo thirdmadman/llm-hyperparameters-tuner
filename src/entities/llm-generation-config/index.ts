@@ -1,1 +1,6 @@
-export type { ILlmGenerationConfig, IGenerationPrompts, IOllamaGenerationHyperparameters } from './model/types';
+export type {
+  IGenerationPrompts,
+  ILlmGenerationConfig,
+  IOllamaGenerationHyperparameters,
+  IPromptVariant,
+} from './model/types';

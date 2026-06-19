@@ -2,6 +2,7 @@ import { LlmParameterInput } from './LlmParameterInput';
 import type { ILlmParameter } from '@/entities/llm-parameter';
 
 export interface LlmParametersInputGroupProps {
+  isVariableSelectionDisabled: boolean;
   llmParameters: Array<ILlmParameter>;
   onParameterUpdateEvent: (parameter: ILlmParameter) => void;
   onParameterSelectedEvent: (parameter: ILlmParameter) => void;
@@ -9,6 +10,7 @@ export interface LlmParametersInputGroupProps {
 }
 
 export function LlmParametersInputGroup({
+  isVariableSelectionDisabled,
   llmParameters,
   onParameterUpdateEvent,
   onParameterSelectedEvent,
@@ -23,6 +25,7 @@ export function LlmParametersInputGroup({
         {llmParameters.map((parameter) => (
           <LlmParameterInput
             key={parameter.name}
+            isVariableSelectionDisabled={isVariableSelectionDisabled}
             llmParameter={parameter}
             onSelectEvent={() => {
               onParameterSelectedEvent(parameter);

@@ -10,12 +10,14 @@ import type { IOllamaGenerationHyperparameters } from '@/entities/llm-generation
 export type TGenerationResultCardStatus = 'idle' | 'completed';
 
 export interface IGenerationResultCardProps {
+  promptVariableLabel: string | null;
   variableParameterLabel: string;
   variableParameterName: string | null;
   generationResult: IGenerationResult;
 }
 
 export function GenerationResultCard({
+  promptVariableLabel,
   variableParameterLabel,
   variableParameterName,
   generationResult,
@@ -36,8 +38,9 @@ export function GenerationResultCard({
     setIsToolCallsExpanded((prev) => !prev);
   };
 
-  const variableParameterValue =
-    generationResult.configs.hyperparameters[variableParameterName as keyof IOllamaGenerationHyperparameters];
+  const variableParameterValue = variableParameterName
+    ? generationResult.configs.hyperparameters[variableParameterName as keyof IOllamaGenerationHyperparameters]
+    : null;
 
   return (
     <div
@@ -53,6 +56,11 @@ export function GenerationResultCard({
           <ExpandButton isExpanded={isExpanded} onToggle={toggleExpand} />
           <StatusBadge status={status} isSmall={!isExpanded} />
         </div>
+        {promptVariableLabel && (
+          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            {promptVariableLabel}
+          </span>
+        )}
         {variableParameterName && (
           <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             {variableParameterLabel} = {variableParameterValue}

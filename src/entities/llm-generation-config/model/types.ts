@@ -18,9 +18,17 @@ export interface IOllamaGenerationHyperparameters {
   num_thread?: number;
 }
 
+export interface IPromptVariant {
+  id: string;
+  systemPrompt: string | null;
+  prompt: string;
+  isEditing: boolean;
+}
+
 export interface IGenerationPrompts {
   systemPrompt: string | null;
   prompt: string;
+  promptVariants: Array<IPromptVariant>;
 }
 
 export interface ILlmGenerationConfig {

@@ -1,6 +1,6 @@
 import type { IGenerationResult } from '@/entities/generation-result';
 import type { ILlmApiConfig } from '@/entities/llm-api-config';
-import type { IGenerationPrompts } from '@/entities/llm-generation-config';
+import type { IGenerationPrompts, IPromptVariant } from '@/entities/llm-generation-config';
 import type { ILlmParameter } from '@/entities/llm-parameter';
 
 export const DEFAULT_API_CONFIG: ILlmApiConfig = {
@@ -122,14 +122,26 @@ export const DEFAULT_LLM_PARAMETERS: Array<ILlmParameter> = [
 export const DEFAULT_GENERATION_PROMPTS: IGenerationPrompts = {
   systemPrompt: null,
   prompt: 'What is the meaning of life?',
+  promptVariants: [],
 };
+
+export function createDefaultPromptPair(systemPrompt: string | null = null, prompt = ''): IPromptVariant {
+  const id = 'pair_' + Date.now().toString() + '_' + Math.random().toString(36).substring(2, 9);
+  return {
+    id,
+    systemPrompt,
+    prompt,
+    isEditing: false,
+  };
+}
 
 export const MOCK_GENERATION_RESULTS: Array<IGenerationResult> = Array.from({ length: 4 }, (_, i) => ({
   model: 'llama3.2',
   configs: {
     promptConfigs: {
       systemPrompt: null,
-      prompt: `This is a test prompt for the ${String(i + 1)}th generation result.`,
+      prompt: 'This is a test prompt for the ' + String(i + 1) + 'th generation result.',
+      promptVariants: [],
     },
     hyperparameters: {
       num_ctx: 2048,

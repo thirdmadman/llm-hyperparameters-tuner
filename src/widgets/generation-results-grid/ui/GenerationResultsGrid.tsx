@@ -4,10 +4,15 @@ import type { ILlmParameter } from '@/entities/llm-parameter';
 
 interface IGenerationResultsGridProps {
   generationResults: Array<IGenerationResult> | null;
+  isPromptVariableSelected: boolean;
   llmParameters: Array<ILlmParameter>;
 }
 
-export function GenerationResultsGrid({ generationResults, llmParameters }: IGenerationResultsGridProps) {
+export function GenerationResultsGrid({
+  generationResults,
+  isPromptVariableSelected,
+  llmParameters,
+}: IGenerationResultsGridProps) {
   const variableParameter = llmParameters.find((parameter) => parameter.isVariable);
 
   return (
@@ -18,6 +23,7 @@ export function GenerationResultsGrid({ generationResults, llmParameters }: IGen
           {generationResults.map((data, i) => (
             <GenerationResultCard
               key={i}
+              promptVariableLabel={isPromptVariableSelected ? `Prompt #${String(i + 1)}` : null}
               variableParameterLabel={variableParameter?.label ?? ''}
               variableParameterName={variableParameter?.name ?? null}
               generationResult={data}

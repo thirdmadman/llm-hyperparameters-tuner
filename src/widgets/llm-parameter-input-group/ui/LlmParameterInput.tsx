@@ -3,6 +3,7 @@ import { InputRange } from './InputRange';
 import type { ILlmParameter } from '@/entities/llm-parameter';
 
 interface ILlmParameterInputProps {
+  isVariableSelectionDisabled: boolean;
   llmParameter: ILlmParameter;
   onSelectEvent: () => void;
   onUpdateEvent: (parameterNewState: ILlmParameter) => void;
@@ -10,11 +11,14 @@ interface ILlmParameterInputProps {
 }
 
 export function LlmParameterInput({
+  isVariableSelectionDisabled,
   llmParameter,
   onSelectEvent,
   onUpdateEvent,
   onToggleEnabledEvent,
 }: ILlmParameterInputProps) {
+  const isVariableButtonDisabled = !llmParameter.isEnabled || isVariableSelectionDisabled;
+
   return (
     <div
       className={`flex flex-col gap-2 rounded-lg border p-4 ${
@@ -59,13 +63,16 @@ export function LlmParameterInput({
               onSelectEvent();
             }}
             className={`shrink-0 px-4 py-2 text-sm font-medium rounded-md transition-colors border cursor-pointer ${
-              !llmParameter.isEnabled
+              isVariableButtonDisabled
                 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                 : llmParameter.isVariable
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
                   : 'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/30'
             }`}
-            disabled={!llmParameter.isEnabled}
+            disabled={isVariableButtonDisabled}
+            title={
+              isVariableSelectionDisabled ? 'Deselect prompt variable to set a hyperparameter variable' : undefined
+            }
           >
             {llmParameter.isVariable ? '✕ Clear Variable' : '⬡ Set Variable'}
           </button>
