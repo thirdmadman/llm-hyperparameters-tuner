@@ -22,7 +22,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    minify: 'terser',
     sourcemap: true,
   },
 });
